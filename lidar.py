@@ -29,7 +29,7 @@ class LidarRecording:
         self.start_time = time.time()
         
         try:
-            for scan in self.lidar.iter_scans():
+            for scan in self.lidar.iter_scans(max_buf_meas = 1000):
                 if not self.recording:
                     break
                 for quality, angle, distance in scan:

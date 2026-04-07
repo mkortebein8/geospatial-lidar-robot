@@ -2,7 +2,7 @@ import pygame
 import sys
 import time
 from Raspbot_Lib import Raspbot
-
+from lidar import LidarRecording
 pygame.init()
 
 pygame.joystick.init()
@@ -14,6 +14,8 @@ joystick = joysticks[0]
 joystick.init()
 
 robot = Raspbot()
+
+lidar_list = LidarRecording()
 
 while True:
     try:
@@ -33,7 +35,15 @@ while True:
 
                 print("Left Motor: ", int(20*left_motor))
                 print("Right Motor: ", int(20*right_motor))
-                
+
+            if event.type == pygame.JOYBUTTONDOWN:
+                if event.button == 3:
+                    if not lidar_list.recording:
+                        lidar_list.start()
+                    else:
+                        lidar_list.stop()
+                        print(lidar_list.angle_data)
+
     except KeyboardInterrupt as e:
         robot.Ctrl_Car(0, 0, 0)
         robot.Ctrl_Car(1, 0, 0)
