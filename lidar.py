@@ -15,9 +15,10 @@ class LidarRecording:
         self.used = False       # True when this instance has recorded some data
 
         # Establish data structures
-        self.angle_data = []        # degrees
-        self.dist_data = []         # meters
+        self.angle_data = []          # degrees
+        self.dist_data = []           # meters
         self.time_data = np.array([]) # seconds
+        self._qual_data = []          # data quality
         
         # establish lidar collection
         self.lidar = RPLidar(self.port)
@@ -33,9 +34,9 @@ class LidarRecording:
                 if not self.recording:
                     break
                 for quality, angle, distance in scan:
-                    if quality > 0:     # when quality = 0, this means that the data is bad and should be ignored
-                        self.dist_data.append(distance / 1000) # Adjust to meters
-                        self.angle_data.append(angle)
+                    self.dist_data.append(distance / 1000) # Adjust to meters
+                    self.angle_data.append(angle)
+                    self._qual_data.append(quality) # when quality = 0, this means that the data is bad and should be ignored, store for not to include in time interpolation
 
         except Exception as e:
             print(f"Lidar error: {e}")
@@ -64,8 +65,16 @@ class LidarRecording:
 
             self.dist_data = np.array(self.dist_data)
             self.angle_data = np.array(self.angle_data)
+            self._qual_data = np.array(self._qual_data)
 
             # Interpolate times
             self.time_data = np.linspace(0, (self.end_time - self.start_time), num=len(self.dist_data))
+
+            # Clip out poor quality data
+            mask = self._qual_data > 0
+            self.dist_data = self.dist_data[mask]
+            self.angle_data = self.angle_data[mask]
+            self._qual_data = self._qual_data[mask]
+            self.time_data = self.time_data[mask]
 
         self.used = True
