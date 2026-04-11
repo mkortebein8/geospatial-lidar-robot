@@ -44,7 +44,7 @@ while True:
                     else:
                         lidar_list[-1].stop()
                         lidar_list.append(LidarRecording())
-                        print("LiDAR recording has stopped.)
+                        print("LiDAR recording has stopped.")
 
     except KeyboardInterrupt as e:
         robot.Ctrl_Car(0, 0, 0)
