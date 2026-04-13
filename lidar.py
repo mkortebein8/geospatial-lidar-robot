@@ -68,7 +68,7 @@ class LidarRecording:
             self._qual_data = np.array(self._qual_data)
 
             # Interpolate times
-            self.time_data = np.linspace(0, (self.end_time - self.start_time), num=len(self.dist_data))
+            self.time_data = np.linspace(self.start_time, self.end_time, num=len(self.dist_data))
 
             # Clip out poor quality data
             mask = self._qual_data > 0
