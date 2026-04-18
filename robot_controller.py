@@ -60,6 +60,7 @@ while not lidar_done:
                         file_name = f'lidar_record_{recording_count}.csv'
                         with open(file_name, 'w', newline='') as file:
                             writer = csv.writer(file)
+                            write.writerow(['angle', 'distance', 'unix_time'])
                             writer.writerows(stuff_for_the_file)
                         
                         # Creates a new LidarRecording instance
