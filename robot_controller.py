@@ -1,6 +1,7 @@
 import pygame
 import sys
 import time
+import csv
 from Raspbot_Lib import Raspbot
 from lidar import LidarRecording
 pygame.init()
@@ -15,9 +16,11 @@ joystick.init()
 
 robot = Raspbot()
 
-lidar_list = [LidarRecording()]
+lidar_inst = LidarRecording()
 
 lidar_done = False
+
+recording_count = 0
 
 while not lidar_done:
     try:
@@ -47,12 +50,25 @@ while not lidar_done:
 
             if event.type == pygame.JOYBUTTONDOWN:
                 if event.button == 3:
-                    if not lidar_list[-1].recording:
-                        lidar_list[-1].start()
+                    if not lidar_inst.recording:
+                        lidar_inst.start()
                         print("LiDAR recording has started.")
                     else:
-                        lidar_list[-1].stop()
-                        lidar_list.append(LidarRecording())
+                        lidar_inst.stop()
+                        # Writes the LiDAR data to a csv file.
+                        angle_data = lidar_inst.angle_data
+                        dist_data = lidar_inst.dist_data
+                        time_data = lidar_inst.time_data
+                        qual_data = lidar_inst._qual_data
+                        stuff_for_the_file = zip(angle_data, dist_data, time_data, qual_data)
+                        file_name = f'lidar_record_{recording_count}.csv'
+                        with open(file_name, 'w', newline='') as file:
+                            writer = csv.writer(file)
+                            writer.writerows(stuff_for_the_file)
+                        
+                        # Creates a new LidarRecording instance
+                        lidar_inst = LidarRecording()
+                        recording_count += 1
                         print("LiDAR recording has stopped.")
                 if event.button == 4:
                    lidar_done = True
