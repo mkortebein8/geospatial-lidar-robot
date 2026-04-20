@@ -115,28 +115,38 @@ void loop() {
     if (myIMU.getSensorEventID() == SENSOR_REPORTID_ACCELEROMETER) {
 
       
-      uint64_t timeStamp = myIMU.getTimeStamp();
+      // uint64_t timeStamp = myIMU.getTimeStamp();
 
+      //acceleration
       float x = myIMU.getAccelX();
       float y = myIMU.getAccelY();
-      // float z = myIMU.getAccelZ();
+      float z = myIMU.getAccelZ();
 
-      float gx = myIMU.getGyroX();
-      float gy = myIMU.getGyroY();
+      //quaterions
+      float qw = myIMU.getQuatReal();
+      float qx = myIMU.getQuatI();
+      float qy = myIMU.getQuatJ();
+      float qz = myIMU.getQuatK();
 
+      //float gx = myIMU.getGyroX();
+      //float gy = myIMU.getGyroY();
 
-      Serial.print(timeStamp);
-      Serial.print(F(","));
+      // acceleration
       Serial.print(x, 2);
       Serial.print(F(","));
       Serial.print(y, 2);
-      // Serial.print(F(","));
-      // Serial.print(z, 2);
+      Serial.print(F(","));
+      Serial.print(z, 2);
       
+      // quaterions
       Serial.print(F(","));
-      Serial.print(gx, 2);
+      Serial.print(qw, 2);
       Serial.print(F(","));
-      Serial.print(gy, 2);
+      Serial.print(qx, 2);
+      Serial.print(F(","));
+      Serial.print(qy, 2);
+      Serial.print(F(","));
+      Serial.print(qz, 2);
 
       Serial.println();
     }
