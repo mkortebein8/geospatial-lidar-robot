@@ -1,20 +1,27 @@
-#### written by copilot
-
 import numpy as np
 import pandas as pd
 
 
 class IMUIntegrator:
-    def __init__(self, csv_path):
+    def __init__(self, csv_path, output_path="imu_output.csv"):
+        self.csv_path = csv_path
+        self.output_path = output_path
+
+        # Load input CSV
         self.df = pd.read_csv(csv_path)
 
-        # Ensure timestamps are in seconds
-        if self.df['timestamp'].max() > 1e6:
-            self.df['timestamp'] = self.df['timestamp'] / 1_000_000
+        # Normalize timestamps to seconds
+        ts_max = self.df['timestamp'].max()
+        if ts_max > 1e12:          # nanoseconds
+            self.df['timestamp'] /= 1_000_000_000
+        elif ts_max > 1e10:        # microseconds
+            self.df['timestamp'] /= 1_000_000
+        elif ts_max > 1e6:         # milliseconds
+            self.df['timestamp'] /= 1000
 
-        # Output arrays
-        self.position = np.zeros((len(self.df), 2))  # px, py
-        self.velocity = np.zeros((len(self.df), 2))  # vx, vy
+        n = len(self.df)
+        self.position = np.zeros((n, 2))  # px, py
+        self.velocity = np.zeros((n, 2))  # vx, vy
 
     def quat_to_matrix(self, q):
         w, x, y, z = q
@@ -30,14 +37,18 @@ class IMUIntegrator:
         for i in range(1, len(self.df)):
             dt = timestamps[i] - timestamps[i - 1]
 
-            # Read acceleration
+            # Reject bad dt values
+            if dt <= 0 or dt > 1:
+                dt = 0.01  # assume 100 Hz fallback
+
+            # Acceleration
             accel_sensor = np.array([
                 self.df.at[i, 'ax'],
                 self.df.at[i, 'ay'],
                 self.df.at[i, 'az']
             ])
 
-            # Read quaternion
+            # Quaternion
             q = np.array([
                 self.df.at[i, 'qw'],
                 self.df.at[i, 'qx'],
@@ -59,4 +70,22 @@ class IMUIntegrator:
             self.position[i, 0] = self.position[i-1, 0] + self.velocity[i, 0] * dt
             self.position[i, 1] = self.position[i-1, 1] + self.velocity[i, 1] * dt
 
-        return self.position, self.velocity
+        # Build output DataFrame
+        result = self.df.copy()
+        result["vx"] = self.velocity[:, 0]
+        result["vy"] = self.velocity[:, 1]
+        result["px"] = self.position[:, 0]
+        result["py"] = self.position[:, 1]
+
+        # Save to CSV
+        result.to_csv(self.output_path, index=False)
+        print(f"Saved processed dataset to {self.output_path}")
+
+        return result
+
+''' how to use (second line needed)
+
+imu = IMUIntegrator("imu_data.csv", "imu_output.csv")
+result_df = imu.process()
+
+'''
