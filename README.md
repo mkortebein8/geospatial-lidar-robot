@@ -22,9 +22,9 @@ This project is an attempt at creating a robot that can map out the area it's in
 
 ## About the Data:
 **LiDAR variables:**\
-angle_data: The angle at which LiDAR point data was taken.
-dist_data: Distance LiDAR point is from the sensor.
-time_data: Gives the time of recordings in Unix format.
+angle_data: The angle at which LiDAR point data was taken.\
+dist_data: Distance LiDAR point is from the sensor.\
+time_data: Gives the time of recordings in Unix format.\
 
 **IMU Variables:**\
 ???
