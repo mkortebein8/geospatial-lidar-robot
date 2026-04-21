@@ -3,7 +3,7 @@ import pandas as pd
 
 
 class IMUIntegrator:
-    def __init__(self, csv_path, output_path="imu_output.csv"):
+    def __init__(self, csv_path="data/imu_output.csv", output_path="data/imu_integration.csv"):
         self.csv_path = csv_path
         self.output_path = output_path
 
@@ -11,13 +11,13 @@ class IMUIntegrator:
         self.df = pd.read_csv(csv_path)
 
         # Normalize timestamps to seconds
-        ts_max = self.df['timestamp'].max()
+        ts_max = self.df['timestamp_us'].max()
         if ts_max > 1e12:          # nanoseconds
-            self.df['timestamp'] /= 1_000_000_000
+            self.df['timestamp_us'] /= 1_000_000_000
         elif ts_max > 1e10:        # microseconds
-            self.df['timestamp'] /= 1_000_000
+            self.df['timestamp_us'] /= 1_000_000
         elif ts_max > 1e6:         # milliseconds
-            self.df['timestamp'] /= 1000
+            self.df['timestamp_us'] /= 1000
 
         n = len(self.df)
         self.position = np.zeros((n, 2))  # px, py
@@ -32,7 +32,7 @@ class IMUIntegrator:
         ])
 
     def process(self):
-        timestamps = self.df['timestamp'].values
+        timestamps = self.df['timestamp_us'].values
 
         for i in range(1, len(self.df)):
             dt = timestamps[i] - timestamps[i - 1]
