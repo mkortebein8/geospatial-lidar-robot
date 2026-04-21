@@ -31,6 +31,6 @@ time_data: Gives the time of recordings in Unix format.
 
 
 ## References:
-PyGame was used to grab input from the controller: https://www.pygame.org/docs/\
-RPLidar was used to get information from the LiDAR sensor: https://github.com/Roboticia/RPLidar\
+PyGame was used to grab input from the controller: https://www.pygame.org/docs/ \
+RPLidar was used to get information from the LiDAR sensor: https://github.com/Roboticia/RPLidar \
 IMU: ???
