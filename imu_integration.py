@@ -71,21 +71,53 @@ class IMUIntegrator:
             self.position[i, 1] = self.position[i-1, 1] + self.velocity[i, 1] * dt
 
         # Build output DataFrame
-        result = self.df.copy()
-        result["vx"] = self.velocity[:, 0]
-        result["vy"] = self.velocity[:, 1]
-        result["px"] = self.position[:, 0]
-        result["py"] = self.position[:, 1]
+        self.result = self.df.copy()
+        self.result["vx"] = self.velocity[:, 0]
+        self.result["vy"] = self.velocity[:, 1]
+        self.result["px"] = self.position[:, 0]
+        self.result["py"] = self.position[:, 1]
 
         # Save to CSV
-        result.to_csv(self.output_path, index=False)
+        self.result.to_csv(self.output_path, index=False)
         print(f"Saved processed dataset to {self.output_path}")
 
-        return result
+        return self.result
+    
+    def location_from_time(self, time): 
+
+        # index of integrated data at the time we're looking for
+        exact_index = self.result.index[self.result['timestamp_us']==time].tolist()
+
+        if len(exact_index) > 0:      # we found an exact match for the time
+
+            px = self.result.iloc[exact_index[0]]['px']
+            py = self.result.iloc[exact_index[0]]['py']
+
+            return px, py
+        
+        # look for the closest times and interpolate approximate position
+        else:
+            #iterate through rows of dataframe
+            for i, row in self.result.iterrows():
+                # pass if before the time we want
+                if row['timestamp_us'] < time:
+                    pass
+                # once we get to time after the one we're searching for
+                else:
+                    # get data directly before and after the time we want
+                    before_row = self.result.iloc[i-1]
+                    after_row = self.result.iloc[i]
+                    # math to figure out position in between
+                    between_ratio = (time-before_row['timestamp_us'])/(after_row['timestamp_us'] - before_row['timestamp_us'])
+                    px = between_ratio * (after_row['px'] - before_row['px']) + before_row['px']
+                    py = between_ratio * (after_row['py'] - before_row['py']) + before_row['py']
+
+                    return px, py
 
 ''' how to use (second line needed)
 
 imu = IMUIntegrator("imu_data.csv", "imu_output.csv")
 result_df = imu.process()
+px, py = imu.location_from_time(1234567890)
 
 '''
