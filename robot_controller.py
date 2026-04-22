@@ -4,7 +4,10 @@ import time
 import csv
 from Raspbot_Lib import Raspbot
 from lidar import LidarRecording
+from imu_integration import IMUIntegrator
 import imu_logger
+import pandas as pd
+import numpy as np
 
 pygame.init()
 
@@ -85,3 +88,28 @@ while not lidar_done:
         
 # Stop recording IMU data
 imu_logger.stop()
+
+# Lidar integration
+imu = IMUIntegrator("data/imu_output.csv", "data/imu_integration.csv")
+imu.process()
+
+# Read and adjust lidar data with imu position data
+count = 0
+while True:
+    try:
+        lidar_data = pd.read_csv("data/lidar_record_{count}.csv")
+
+        # Fill in robot position
+        lidar_data[['robot_x', 'robot_y']] = lidar_data['unix_time'].apply(imu.location_from_time).apply(pd.Series)
+
+        # Calculate lidar position
+        lidar_data['x'] = lidar_data['robot_x'] + lidar_data['distance'] * np.cos(lidar_data['angle'])
+        lidar_data['y'] = lidar_data['robot_y'] + lidar_data['distance'] * np.sin(lidar_data['angle'])
+
+        # Write out to file
+        lidar_data.to_csv("data/lidar_record_{count}.csv")
+
+        count += 1
+
+    except FileNotFoundError:
+        break
