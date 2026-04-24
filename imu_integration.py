@@ -107,7 +107,7 @@ class IMUIntegrator:
 
 ''' how to use (second line needed)
 
-imu = IMUIntegrator("imu_output.csv", "imu_integrated.csv")
+imu = IMUIntegrator("imu_output.csv", "imu_integration.csv")
 result_df = imu.process()
 px, py = imu.location_from_time(1234567890)
 
